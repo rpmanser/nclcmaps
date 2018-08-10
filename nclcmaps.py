@@ -10,8 +10,9 @@ Bailey Swick and Russell Manser
 """
 
 import numpy as np
-import matplotlib.colors as mcolors
+#import matplotlib.colors as mcolors
 from matplotlib.colors import ListedColormap
+import csv
 
 __all__ = ['nclcmaps']
 
@@ -262,32 +263,30 @@ colors = {"white_black":[[1.0,1.0,1.0],[0.0,0.0,0.0]],
 
 
 
-
 """
 FUNCTION DEFINITION: cmap
     INPUTS
     - name (string): name of the NCL color table
-    - revBool (bool): whether or not the order of the colors should be reversed
-    
-    OUTPUT (Colormap): return a Colormap corresponding to the color table requested
+    - reverse (bool): if True, reverse the color table
+
+    OUTPUT
+    - cmap (ListedColormap): return a ListedColormap corresponding to the color
+      table requested
 """
 
-def cmap(name, revBool=False):
-    
-    # Create a Colormap object of the NCL color table
-    if revBool == False:
-        data = np.array(colors[name])
-        data = data / np.max(data)
-        #data = np.concatenate((whbl,data))
-        cmap = ListedColormap(data, name=name)
-        
-    # Create a Colormap object of the NCL color table in reverse
-    elif revBool == True:
-        data = np.array(colors[name])
+def cmap(name, reverse=False):
+
+    # Retrieve the color table data and convert all RGB values to a decimal
+    # between 0 and 1
+    data = np.array(colors[name])
+    maximum = np.max(data)
+    data = data / maximum
+    #data = np.concatenate((whbl,data)) # concatenate white and black
+
+    if reverse:
         data = np.flip(data, 0)
-        data = data / np.max(data)
-        #data = np.concatenate((whbl,data))
-        cmap = ListedColormap(data, name=name)
+
+    cmap = ListedColormap(data, name=name)
 
     return cmap
 
@@ -299,29 +298,28 @@ FUNCTION DEFINITION: cmapRange
     - name (string): name of the NCL color table
     - start (int): index of the first desired color
     - finish (int): index of the last desired color
-    - revBool (bool): whether or not the order of colors should be reversed
-    
-    OUTPUT (Colormap): return a Colormap corresponding to the segment of the color table requested
+    - reverse (bool): if True, reverse the color table
+
+    OUTPUT
+    - cmap (ListedColormap): return a ListedColormap corresponding to the
+      segment of the color table requested
 """
 
-def cmapRange(name, start, finish=-1, revBool=False):
-            
-    # Create a Colormap object of the range of values in the NCL color table
-    if revBool == False:
-        maximum = np.max(np.array(colors[name]))
-        data = np.array(colors[name][start:finish])
-        data = data / maximum
-        #data = np.concatenate((whbl,data))
-        cmap = ListedColormap(data, name=name)
-        
-    # Create a Colormap object of the range of values in the NCL color table in reverse
+def cmapRange(name, start, finish=-1, reverse=False):
+
+    # Retrieve the color table data and convert all RGB values to a decimal
+    # between 0 and 1
+    maximum = np.max(np.array(colors[name]))
+    data = np.array(colors[name][start:finish])
+    data = data / maximum
+    #data = np.concatenate((whbl,data))
+
+    # Create a ListedColormap object of the range of values in the NCL color
+    # table in reverse
     if revBool == True:
-        maximum = np.max(np.array(colors[name]))
-        data = np.array(colors[name][start:finish])
-        data = data / maximum
         data = np.flip(data, 0)
-        cmap = ListedColormap(data, name=name)
-        
+
+    cmap = ListedColormap(data, name=name)
     return cmap
 
 
@@ -330,39 +328,43 @@ def cmapRange(name, start, finish=-1, revBool=False):
 FUNCTION DEFINITION: cmapDiscrete
     INPUTS
     - name (string): name of the NCL color table
-    - indexList (list): the elements of the color table
-    - multiBool (bool): indicates whether or not the function is
-        being called multiple times
-    
+    - indices (list): the elements of the color table
+    - multi (bool): indicates whether or not the function is being called
+      multiple times
+
     OUTPUT
-    - There is always a *single* output, but its type depends on multiBool
-    - multiBool=False (Colormap): return a color map corresponding to the segments of the color table requested
-    - multiBool=True (np.array()): return a numpy array containing the raw data corresponding to the segments of
-        the color table requested
+    - There is always a *single* output, but its type depends on multi
+    - multi=False (ListedColormap): return a ListedColormap corresponding to
+      the segments of the color table requested
+    - multi=True (numpy array of floats): return a numpy array containing the raw data
+      corresponding to the segments of the color table requested
 """
 
-def cmapDiscrete(name, indexList=[], multiBool=False):
-    # Initialize a copy of indexList
-    transformIndexList = []
-    for item in indexList:
-        transformIndexList.append(item-2)
-    
+def cmapDiscrete(name, indices=[], multi=False):
+
+    # Initialize a copy of indices
+    temp = []
+    for item in indices:
+        temp.append(item-2)
+
     # Initialize a list of the raw NCL color table data
-    dataList = []
-    for element in transformIndexList:
-        dataList.append(colors[name][element])
-        
+    data = []
+    for element in temp:
+        data.append(colors[name][element])
+
     # Reads in the white and black (for elements 0 and 1) and saves as an array
-    
-    # Convert all RGB values to a decimal between 0 and 1
+
+    # Retrieve the color table data and convert all RGB values to a decimal
+    # between 0 and 1
     maximum = np.max(np.array(colors[name]))
-    data = np.array(dataList)
+    data = np.array(data)
     data = data / maximum
 
     # If cmapDiscrete is being called by cmapMulti, return the raw color table data
-    if multiBool:
+    if multi:
         return data
-    # Otherwise, return a Colormap object
+
+    # Otherwise, return a ListedColorMap object
     else:
         cmap = ListedColormap(data, name=name)
         return cmap
@@ -372,25 +374,109 @@ def cmapDiscrete(name, indexList=[], multiBool=False):
 """
 FUNCTION DEFINITION: cmapMulti
     INPUTS
-    - names (np.array(string)): NCL color table name(s)
-    - indexListMulti (list): list(s) for each NCL color table
-    
-    OUTPUT (Colormap): a color map of one or more NCL color tables
+    - names (numpy array of strings): NCL color table name(s)
+    - indicesList (list): list(s) for each NCL color table
+    - save (bool): save the custom color map to /nclcmaps/customMaps/
+    - newName (string): name of the custom color map. If no name is given,
+      the default name "newcmap" will be used, and the file  will be written
+      to /nclcmaps/customMaps/newcmap.csv
+
+    OUTPUT
+    - cmap (ListedColormap): a ListedColormap of one or more NCL color tables
       in the order(s) and discretization(s) specified
 """
 
-def cmapMulti(names, indexListMulti):    
+def cmapMulti(names, indicesList, save=False, newName="newcmap"):
+
     # Number of color tables to combine
-    num_tbl = len(names)
-    
+    numtbl = len(names)
+
     # Initialize an array with the first color table
-    transformArr = np.array(cmapDiscrete(names[0], indexListMulti[0], True))
-    
+    data = np.array(cmapDiscrete(names[0], indicesList[0], True))
+
     # Concatenate the rest of the color tables
-    for item in range(1, num_tbl):
-        tempArr = cmapDiscrete(names[item], indexListMulti[item], True)
-        transformArr = np.concatenate((transformArr, tempArr))
-        
-    # Return the color map corresponding to the combined color tables
-    cmap = ListedColormap(transformArr)
+    for item in range(1, numtbl):
+        temp = cmapDiscrete(names[item], indicesList[item], True)
+        data = np.concatenate((data, temp))
+
+    # Save the custom color map to nclcmaps/customMaps/
+    if save:
+        __save(newName, data)
+
+    # Return the ListedColormap corresponding to the combined color tables
+    cmap = ListedColormap(data)
+    return cmap
+
+
+
+"""
+FUNCTION DEFINTION: __save
+    INPUTS
+    - mapName (string): name of the custom color map to save to file
+    - data (numpy array of numpy arrays which contain three floats each):
+      array of rgb triplets
+
+    OUTPUT: none
+"""
+
+def __save(name, data):
+
+    # Write to a new file
+    customMap = open("./customMaps/" + mapName + ".csv", "w")
+
+    # Write each rgb triplet to a new line
+    for item in range(0, len(data)):
+
+        i = 0
+        while i < 3:
+            # Convert the rgb value to a string
+            rgb = str(data[item][i])
+
+            # Write value to file and separate with a comma
+            if i != 2:
+                customMap.write(rgb + ",")
+
+            # Separate triplets with a line break
+            else:
+                customMap.write(rgb + "\n")
+            i += 1
+
+    customMap.close()
+
+
+
+"""
+FUNCTION DEFINITION: load
+    INPUT
+    - mapName (string): name of the custom color map in nclcmaps/customMaps/
+
+    OUTPUT
+    - cmap (ListedColormap): the requested custom color map
+"""
+
+def load(mapName):
+
+    # Open the file
+    try:
+        customMap = open("./customMaps/" + mapName + ".csv", "r")
+    except:
+        print("File " + mapName + ".csv does not exist!")
+
+    # Array for the full color map
+    data = []
+
+    readCSV = csv.reader(customMap, delimiter=",")
+
+    for row in readCSV:
+        # Temp array for the rgb triplet on each line
+        temp = [-1, -1, -1]
+
+        # Assign the rgb triplet to temp
+        temp[0] = float(row[0])
+        temp[1] = float(row[1])
+        temp[2] = float(row[2])
+
+        data.append(temp)
+
+    cmap = ListedColormap(data)
     return cmap
