@@ -266,24 +266,27 @@ colors = {"white_black":[[1.0,1.0,1.0],[0.0,0.0,0.0]],
           }
 
 
-
-"""
-FUNCTION DEFINITION: cmap
-    INPUTS
-    - name (string): name of the NCL color table
-    - reverse (bool): if True, reverse the color table
-    - save (bool): save the custom color map to /nclcmaps/customMaps/
-    - newName (string): name of the custom color map. If no name is given,
-      the default name "newcmap" will be used, and the file  will be written
-      to /nclcmaps/customMaps/newcmap.csv
-
-    OUTPUT
-    - cmap (ListedColormap): return a ListedColormap corresponding to the color
-      table requested
-"""
-
 def cmap(name, reverse=False, save=False, newName="newcmap"):
+    """
+    Select a colormap by name.
 
+    Parameters
+    ----------
+    name : string
+        Name of the NCL color table or matplotlib colormap.
+    reverse : boolean (default: False)
+        Reverse the direction of the colormap.
+    save : boolean (default: False)
+        Save the colormap as a csv file.
+    newName : string (default: "newcmap")
+        Name of the saved colormap
+
+    Returns
+    -------
+    ListedColormap
+        A ListedColormap object corresponding to the NCL color table or matplotlib
+        colormap requested.
+    """
     # Retrieve the color table data and convert all RGB values to a decimal
     # between 0 and 1
     data = np.array(colors[name])
@@ -293,7 +296,7 @@ def cmap(name, reverse=False, save=False, newName="newcmap"):
 
     if reverse:
         data = np.flip(data, 0)
-        
+
     # Save the custom color map to nclcmaps/customMaps/
     if save:
         __save(newName, data)
@@ -303,26 +306,31 @@ def cmap(name, reverse=False, save=False, newName="newcmap"):
     return cmap
 
 
-
-"""
-FUNCTION DEFINITION: cmapRange
-    INPUTS
-    - name (string): name of the NCL color table
-    - start (int): index of the first desired color
-    - finish (int): index of the last desired color
-    - reverse (bool): if True, reverse the color table
-    - save (bool): save the custom color map to /nclcmaps/customMaps/
-    - newName (string): name of the custom color map. If no name is given,
-      the default name "newcmap" will be used, and the file  will be written
-      to /nclcmaps/customMaps/newcmap.csv
-
-    OUTPUT
-    - cmap (ListedColormap): return a ListedColormap corresponding to the
-      segment of the color table requested
-"""
-
 def cmapRange(name, start, finish=-1, reverse=False, save=False, newName="newcmap"):
+    """
+    Select a range of colors from a colormap.
 
+    Parameters
+    ----------
+    name : string
+        Name of the NCL color table or matplotlib colormap.
+    start : int
+        Index of the first desired color.
+    finish : int (default: -1)
+        Index of the last desired color.
+    reverse : boolean (default: False)
+        Reverse the direction of the colormap.
+    save : boolean (default: False)
+        Save the colormap as a csv file.
+    newName : string (default: "newcmap")
+        Name of the saved colormap
+
+    Returns
+    -------
+    ListedColormap
+        A ListedColormap object corresponding to the segment of the NCL color table
+        or matplotlib colormap requested.
+    """
     # Retrieve the color table data and convert all RGB values to a decimal
     # between 0 and 1
     maximum = np.max(np.array(colors[name]))
@@ -334,7 +342,7 @@ def cmapRange(name, start, finish=-1, reverse=False, save=False, newName="newcma
     # table in reverse
     if reverse:
         data = np.flip(data, 0)
-        
+
     # Save the custom color map to nclcmaps/customMaps/
     if save:
         __save(newName, data)
@@ -343,29 +351,29 @@ def cmapRange(name, start, finish=-1, reverse=False, save=False, newName="newcma
     return cmap
 
 
-
-"""
-FUNCTION DEFINITION: cmapDiscrete
-    INPUTS
-    - name (string): name of the NCL color table
-    - indices (list): the elements of the color table
-    - save (bool): save the custom color map to /nclcmaps/customMaps/
-    - newName (string): name of the custom color map. If no name is given,
-      the default name "newcmap" will be used, and the file  will be written
-      to /nclcmaps/customMaps/newcmap.csv
-    - multi (bool): indicates whether or not the function is being called
-      multiple times (this parameter is only used by the cmapMulti() function)
-
-    OUTPUT
-    - There is always a *single* output, but its type depends on multi
-    - multi=False (ListedColormap): return a ListedColormap corresponding to
-      the segments of the color table requested
-    - multi=True (numpy array of floats): return a numpy array containing the raw data
-      corresponding to the segments of the color table requested
-"""
-
 def cmapDiscrete(name, indices=[], save=False, newName="newcmap", multi=False):
+    """
+    Select discrete colors from a colormap.
 
+    Parameters
+    ----------
+    name : string
+        Name of the NCL color table or matplotlib colormap.
+    indices : list
+        Desired elements of the colormap.
+    save : boolean (default: False)
+        Save the colormap as a csv file.
+    newName : string (default: "newcmap")
+        Name of the saved colormap
+    multi : boolean (default: False)
+        Return a colormap composed of multiple NCL or matplotlib colormaps. This
+        flag is used by cmapMulti, and should not be called explicitly.
+
+    Returns
+    -------
+    ListedColormap
+        A ListedColormap object corresponding to the segment(s) of the requested colormap.
+    """
     # Initialize a copy of indices
     temp = []
     for item in indices:
@@ -387,7 +395,7 @@ def cmapDiscrete(name, indices=[], save=False, newName="newcmap", multi=False):
     # Save the custom color map to nclcmaps/customMaps/
     if save:
         __save(newName, data)
-    
+
     # If cmapDiscrete is being called by cmapMulti, return the raw color table data
     if multi:
         return data
@@ -398,24 +406,26 @@ def cmapDiscrete(name, indices=[], save=False, newName="newcmap", multi=False):
         return cmap
 
 
-
-"""
-FUNCTION DEFINITION: cmapMulti
-    INPUTS
-    - names (numpy array of strings): NCL color table name(s)
-    - indicesList (list): list(s) for each NCL color table
-    - save (bool): save the custom color map to /nclcmaps/customMaps/
-    - newName (string): name of the custom color map. If no name is given,
-      the default name "newcmap" will be used, and the file  will be written
-      to /nclcmaps/customMaps/newcmap.csv
-
-    OUTPUT
-    - cmap (ListedColormap): a ListedColormap of one or more NCL color tables
-      in the order(s) and discretization(s) specified
-"""
-
 def cmapMulti(names, indicesList, save=False, newName="newcmap"):
+    """
+    Select discrete colors or ranges of colors from multiple colormaps.
 
+    Parameters
+    ----------
+    names : array-like of strings
+        Names of the colormaps to select from.
+    indicesList : list of lists
+        Indices of color(s) from each desired colormap.
+    save : boolean (default: False)
+        Save the colormap as a csv file.
+    newName : string (default: "newcmap")
+        Name of the saved colormap
+
+    Returns
+    -------
+    ListedColormap
+        A ListedColormap object corresponding to the segment(s) of the requested colormap(s).
+    """
     # Number of color tables to combine
     numtbl = len(names)
 
@@ -436,19 +446,21 @@ def cmapMulti(names, indicesList, save=False, newName="newcmap"):
     return cmap
 
 
-
-"""
-FUNCTION DEFINTION: __save
-    INPUTS
-    - mapName (string): name of the custom color map to save to file
-    - data (numpy array of numpy arrays which contain three floats each):
-      array of rgb triplets
-
-    OUTPUT: none
-"""
-
 def __save(name, data):
+    """
+    Save a custom colormap to csv.
 
+    Parameters
+    ----------
+    mapName : string
+        Name of the custom colormap.
+    data : arrays of arrays
+        Array of rgb triplets composing the new colormap.
+
+    Returns
+    -------
+    None
+    """
     # Write to a new file
     customMap = open("./customMaps/" + name + ".csv", "w")
 
@@ -472,18 +484,20 @@ def __save(name, data):
     customMap.close()
 
 
-
-"""
-FUNCTION DEFINITION: load
-    INPUT
-    - mapName (string): name of the custom color map in nclcmaps/customMaps/
-
-    OUTPUT
-    - cmap (ListedColormap): the requested custom color map
-"""
-
 def load(mapName):
+    """
+    Load a custom colormap from csv.
 
+    Parameters
+    ----------
+    mapName : string
+        Name of the custom colormap.
+
+    Returns
+    -------
+    ListedColormap
+        The requested custom colormap.
+    """
     # Open the file
     try:
         customMap = open("./customMaps/" + mapName + ".csv", "r")
@@ -508,6 +522,6 @@ def load(mapName):
         data.append(temp)
 
     customMap.close()
-        
+
     cmap = ListedColormap(data)
     return cmap
